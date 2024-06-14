@@ -1,0 +1,98 @@
+version: '3'
+services:
+    db:
+     image: mysql:8
+     volumes:
+      - db-data:/var/lib/mysql 
+     restart: always
+     environment:
+      MYSQL_ROOT_PASSWORD: /run/secrets/db_root_password 
+      MYSQL_USER: /run/secrets/db_user
+      MYSQL_PASSWORD: /run/secrets/db_password 
+      MYSQL_DATABASE: wordpress
+     secrets:
+      - db_root_password
+      - db_user
+      - db_password
+     networks:
+      - wp-network
+
+    wordpress:
+     image: wordpress:latest
+     depends_on:
+      - db
+     volumes:
+      - wp-data:/var/www/html
+     restart: always
+     ports:
+      - "8000:80"
+     environment:
+       WORDPRESS_DB_HOST: db:3306
+       WORDPRESS_DB_USER: /run/secrets/db_user
+       WORDPRESS_DB_PASSWORD: /run/secrets/db_password
+     secrets:
+      - db_user
+      - db_password
+     networks:
+      - wp-network
+
+volumes:
+ db-data:
+ wp-data:
+networks:
+ wp-network:
+secrets:
+ db_root_password:
+  file: ./db_root_password.txt
+ db_user:
+  file: ./db_user.txt
+ db_password:
+   file: ./db_password.txt
+
+
+# version: '3'
+# services:
+#   db:
+#     image: mysql:5.7
+#     volumes:
+#       - db_data:/var/lib/mysql
+#     restart: always
+#     environment:
+#       MYSQL_ROOT_PASSWORD: /run/secrets/db_root_password
+#       MYSQL_PASSWORD: /run/secrets/db_password
+#       MYSQL_USER: /run/secrets/db_user
+#       MYSQL_DATABASE: wordpress
+#     secrets:
+#      - db_root_password
+#      - db_user
+#      - db_password
+#     networks:
+#      - wp_network
+  
+#   wordpress:
+#     image: wordpress
+#     depends_on:
+#      - db
+#     ports:
+#      - "8000:80"
+#     restart: always
+#     environment:
+#      WORDPRESS_DB_HOST: db:3306
+#      WORDPRESS_DB_USER: /run/secrets/db_user
+#      WORDPRESS_DB_PASSWORD: /run/secrets/db_password
+#     secrets:
+#      - db_user
+#      - db_password
+#     networks:
+#      - wp_network
+# volumes:
+#   db_data:
+# networks:
+#   wp_network:
+# secrets:
+#   db_root_password:
+#     file: ./db_root_password.txt
+#   db_user:
+#     file: ./db_user.txt
+#   db_password:
+#     file: ./db_password.txt
